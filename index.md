@@ -6,6 +6,5 @@
 ### Homework 2
 ### Homework 3
 
-[link] (https://moodle.boun.edu.tr/login/login.php)
-
+{link} (https://moodle.boun.edu.tr/course/view.php?id=50964)
 
