@@ -1,0 +1,189 @@
+IE 360 - HW 1
+Hamza Kale
+April 15, 2022
+
+# 1 Introduction
+
+In this homework, I would like to understand what influences the  Housing Unit Prices. To succeed that I choose the research question which is whether the Housing Unit Prices are related to the Price Indices, and/or  Interest Rates For Banks Loans or not. 
+
+Data: 2010-01,2021-12 (Monthly)
+Data categories from EVDS:
+HOUSING AND CONSTRUCTION STATISTICS
+ Housing Unit Prices(Monthly)
+  Housing Unit Prices for Turkey - TL/sq m
+PRICE INDICES
+ Cost of Living Indices for Wage Earners
+  	Dwelling Expenses (ICC 1995=100)
+INTEREST RATES
+ Weighted Average Interest Rates For Banks Loans (Flow Data, %))(Monthly)
+  Housing (TRY)(Flow Data, %)
+
+I used the data provided by EVDS for these three measures of interest and I also benefited from Google Trends for finding the search volumes of two related keywords: "Satılık Daire" and "Kredi"
+From Google Trend:
+ I search the "Konut Kredisi" keyword.
+
+# 2) Preparing data
+## 2.1) Loading the required packages:
+```{r, echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+library("readxl")
+library("ggplot2")
+library("usethis")
+library("devtools")
+library("scales")
+library("zoo")
+
+```
+
+## 2.2) Merging Data
+
+After I get the datasets from EVDS database in .xlsx format, I converted the all dates to the standard format. Then I combine them under a data frame which name is alldata to make easier to do data to visualize data.
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+konutinterest<-read_excel("deneme2.xlsx")
+konutinterest$Dates<-paste0(konutinterest$Dates, rep("-15",length(konutinterest$Dates)))
+konutinterest$Dates<-as.Date(konutinterest$Dates)
+
+
+
+konutfiyat<-read_excel("deneme2.2.xlsx")
+konutfiyat$Dates<-paste0(konutfiyat$Dates, rep("-15",length(konutfiyat$Dates)))
+konutfiyat$Dates<-as.Date(konutfiyat$Dates)
+
+
+
+konutkredi<-read_excel("denemegoogle.xlsx")
+konutkredi$Dates<-paste0(konutkredi$Dates, rep("-15",length(konutkredi$Dates)))
+konutkredi$Dates<-as.Date(konutkredi$Dates)
+
+dwellingexpenses<-read_excel("CostofLivingIndicesforWageEarners.xlsx")
+dwellingexpenses$Dates<-paste0(dwellingexpenses$Dates, rep("-15",length(dwellingexpenses$Dates)))
+dwellingexpenses$Dates<-as.Date(dwellingexpenses$Dates)
+
+
+
+alldata<-data.frame(cbind(konutfiyat$Dates,konutfiyat$konutfiyat,konutinterest$konutinterest,konutkredi$konutkredi,dwellingexpenses$dwellingexpenses))
+alldata$X1<-as.Date(alldata$X1)
+
+colnames(alldata)<-c("Dates","konutfiyat", "konutinterest","konutkredi","dwellingexpenses")
+
+```
+# 3) Visualizing the Datasets & Correlations
+## 3.1) The Price of Unit House in Turkey
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=konutfiyat),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=konutfiyat),colour="#00FF00",size=2)
+  
+  q <- ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=konutfiyat),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=konutfiyat),colour="#00FF00",size=2)
+    q+   geom_smooth(mapping=aes(x=Dates,y=konutfiyat),method = lm, color = "yellow")
+
+```
+
+The data clearly shows that the price of unit house in Turkey shows an exponential growth in Turkey. Although there was a small decrease in housing prices due to the huge reduction in the housing interest rate in July 2019, the price increase continues exponentially.
+
+
+## 3.2) Interest Rate in Turkey
+
+```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=konutinterest),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=konutinterest),colour="#00FF00",size=2)
+  
+p <- ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=konutinterest),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=konutinterest),colour="#00FF00",size=2)
+  p+   geom_smooth(mapping=aes(x=Dates,y=konutinterest),method = lm, color = "yellow")
+    
+```
+
+There is clearly a seasonality in the interest rates in the table. The reason for this may be the increase in the rate of buying a house in the summer. For example, with the increase in the rate of marriage in the summer, the number of couples buying a house increases even more. In addition, it seems that the interest rate cut in 2019-July caused a large gap.
+
+## 3.3) The Price Indices for Dwelling Expenses in Turkey
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=dwellingexpenses),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=dwellingexpenses),colour="#00FF00",size=2)
+  
+  q <- ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=dwellingexpenses),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=dwellingexpenses),colour="#00FF00",size=2)
+    q+   geom_smooth(mapping=aes(x=Dates,y=dwellingexpenses),method = lm, color = "yellow")
+```
+
+In this picture, which is similar to the increase in house prices, dwelling expenditures increase exponentially.
+
+## 3.4) Google Trends Data for "Konut Kredisi"
+```{r echo=TRUE, message=FALSE, warning=FALSE, paged.print=FALSE}
+ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=konutkredi),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=konutkredi),colour="#00FF00",size=2)
+  
+  q <- ggplot(data=alldata)+geom_line(mapping=aes(x=Dates,y=konutkredi),size=1,colour="00FF00")+
+  geom_point(mapping=aes(x=Dates,y=konutkredi),colour="#00FF00",size=2)
+    q+   geom_smooth(mapping=aes(x=Dates,y=konutkredi),method = lm, color = "yellow")
+```
+
+The keyword "konut kredisi" generally shows a uniform distribution. After the interest rate cut in July 2019 and in January 2020, when the USD/TL exchange rate changed greatly, keyword searches unexpectedly increased.
+
+# 4) Relationships between datasets
+## 4.1) The Price of Unit House in Turkey vs  Interest Rate in Turkey
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+scale2<-mean(alldata$konutfiyat)/mean(alldata$konutinterest)
+
+ggplot(data=alldata, aes(x=Dates))+geom_line(aes(y=konutfiyat),size=2,colour="#00FF00")+ geom_line(aes(y=konutinterest*scale2))
+
+  
+```
+
+Black line: The Price of Unit House in Turkey
+Yellow Line: Interest Rate in Turkey
+
+While plotting these two data as a plot table, we calculated the average of both data and found a ratio in order to minimize the scale difference between them. In this way, the scale problem was solved.
+
+It may seem that there is no relationship between the interest rate and the house price, but it should not be forgotten that interest data has seasonality. It can be said that there is a slightly increasing trend in both metrics. In addition, the change in 2019-July affected both metrics in direct proportion.
+
+
+### 4.2) The Price of Unit House in Turkey vs  Dwelling Expenses
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+scale<- max(alldata$konutfiyat)/max(alldata$dwellingexpenses)
+
+ggplot(data=alldata, aes(x=Dates))+geom_line(aes(y=dwellingexpenses*scale),size=2,colour="#00FF00")+ geom_line(aes(y=konutfiyat),size=2)
+
+
+```
+
+
+Black line: The Price of Unit House in Turkey
+Yellow Line:  Dwelling Expenses in Turkey
+
+While plotting these two data as a plot table, we calculated the average of both data and found a ratio in order to minimize the scale difference between them. In this way, the scale problem was solved.
+
+These two metrics show a direct and linear relationship with each other.
+
+### 4.3) Interest Rate vs Dwelling Expenses
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+scale<- max(alldata$konutinterest)/max(alldata$dwellingexpenses)
+
+ggplot(data=alldata, aes(x=Dates))+geom_line(aes(y=dwellingexpenses*scale),size=2,colour="#00FF00")+ geom_line(aes(y=konutinterest),size=2)
+```
+
+While plotting these two data as a plot table, we calculated the average of both data and found a ratio in order to minimize the scale difference between them. In this way, the scale problem was solved.
+There is no clear correlation between Interest Rate and Dwelling Expenses
+
+### 4.4) The Price of Unit House vs Google Trends Data for "Konut Kredisi"
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+scale<- max(alldata$konutfiyat)/max(alldata$konutkredi)
+
+ggplot(data=alldata, aes(x=Dates))+geom_line(aes(y=konutkredi*scale),size=2,colour="#00FF00")+ geom_line(aes(y=konutfiyat),size=2)
+```
+
+The key word "Konut Kredisi" has taken on a seasonal character after 2016. this shows an increasing trend in addition to seasonality. There is also an increasing trend in house prices, but it cannot be said that the rates are at similar values.
+
+# 4) Conclusion
+
+
+The Price of Unit House have a strong correlation with dwelling expenses.
+There is a moderate correlation between price of unit house and interest rates.
+However there is no evidence for strong correlation between price of unit house and the search of "Konut Kredisi" keyword.
+
+
+
+
